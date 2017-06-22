@@ -1,0 +1,72 @@
+﻿# Problems to solve:
+
+In .Net MVC the parameters are parsed into Models, these models can be checked with ModelState.IsValid. 
+
+* These Models have to be build redundant on the js side and to be manually updated when the C# Model changes
+* The client only knows if his request was valid after it was send. The user can not be warned. Of Course the validation has to be done on the server for security issues but why not do it on the client side and notify the user immediately?
+
+## Example
+
+It might be great to transpile this class:
+
+```
+namespace MyApp.Models.Catmodels
+{
+	//TranspileToJs("MyDotNetModels.js");
+    [Serializable]
+    public class MyCat
+    {
+        [Required]
+        [Range(0, Int32.MaxValue)]
+        public int CatId { get; set; }
+
+        [RegularExpression(@"^[^\W]+$")]
+        public string Name { get; set; }
+
+        [Required]
+        [RegularExpression(@"([0-9],?)+")]
+        public string FavoriteFoodIds { get; set; }
+		
+        [StringLength(24), Required]
+        [RegularExpression(@"\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d{3}Z")]
+        public string BirthdayIso { get; set; }
+	} 
+}
+```
+
+to a MyDotNetModels.js that contains something like this: 
+
+```
+var MyApp$Models$Catmodels = {	//or just Catmodels as namespace, whatever
+
+	function MyCat(CatId, FavoriteFoodIds, Name, BirthdayIso){ 
+		this.CatId = CatId;
+		this.FavoriteFoodIds = FavoriteFoodIds; 
+		this.Name = Name;
+		this.BirthdayIso = BirthdayIso;
+		
+		this.isModelInvalide = function(){
+			var validationErrors = [];
+			if(!this.CatId)
+				validationErrors.push("CatId is required");
+			else if(typeof this.CatId !== "number") 
+				validationErrors.push("CatId is no number");
+			else if(this.CatId < 0) 
+				validationErrors.push("CardId shall not be smaller than 0");
+
+			if(this.Name && !/^[^\W]+$/.test(this.Name))
+				validationErrors.push("Name does not fit the reqular expression");
+			
+			// ...etc. and at the end of the function send false if the model is not invalide
+			
+			return validationErrors.length ? validationErrors : false;
+		}
+	}
+}
+```
+or the ES6 version of a class in js. 
+
+# How to solve
+
+The solution might be to generate the js-models on every save at one of the selected files or before every compile. 
+It could be done for instance with the help of t4-templates, JavascriptConverter, gulp, C#- Reflections (maybe over Edge.js)...
