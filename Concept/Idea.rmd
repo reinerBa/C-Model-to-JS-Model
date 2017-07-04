@@ -66,6 +66,8 @@ var MyApp$Models$Catmodels = {	//or just Catmodels as namespace, whatever
 ```
 or the ES6 version of a class in js. 
 
+There many tools for json schema validation that could do the job too https://github.com/burningtree/awesome-json#json-schema-tools 
+
 # How to solve
 
 The solution might be to generate the js-models on every save at one of the selected files or before every compile. 
